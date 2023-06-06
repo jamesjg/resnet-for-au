@@ -12,6 +12,8 @@ def train_one_epoch(train_loader, model, optimizer, criterion, epoch,  args, log
     batch_start_time = time.time()
 
     for idx, (imgs, labels) in enumerate(train_loader):
+            img = img.cuda()
+            labels = labels.cuda()
             bs = labels.shape[0]
             data_time.update(time.time() - batch_start_time)
             optimizer.zero_grad()
@@ -70,6 +72,8 @@ def evalutate(val_loader, model, criterion, epoch, args, logger):
         # predicted_positives = torch.zeros(24).cuda()
         # actual_positives = torch.zeros(24).cuda()
         for idx, (imgs, labels) in enumerate(val_loader):
+            img = img.cuda()
+            labels = labels.cuda()
             bs = labels.shape[0]
             output = model(imgs)
             loss_val = criterion(output, labels)

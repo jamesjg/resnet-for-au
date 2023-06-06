@@ -70,7 +70,7 @@ class AuDataset(Dataset):
         if self.transform:
             img, label = self.transform(img, label)
         assert label.shape[0]==24, 'label shape is {:}'.format(label.shape)
-        return img.cuda(), label.cuda()
+        return img, label
                  
     def __len__(self):
         return len(self.labels_path)

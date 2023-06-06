@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from Dataset.get_landmarks import align_face
 from utils.get_logger import create_logger
 def main(args):
-    logger = create_logger(args.log_dir)
+    logger = create_logger(args.log_dir, model_name='resnet18')
     transform_train = Compose([
         RandomCrop(224),
         RandomColorjitter(),
@@ -58,7 +58,7 @@ def main(args):
                             shuffle=False,
                             num_workers=args.num_workers)
     #加载模型，使用预训练模型，但是最后一层重新训练
-    model = torchvision.models.resnet50().cuda()
+    model = torchvision.models.resnet18().cuda()
     num_features = model.fc.in_features
     model.fc = nn.Sequential(
         nn.Linear(num_features, 24),
@@ -75,13 +75,7 @@ def main(args):
                             weight_decay=args.weight_decay)
     mse_loss = torch.nn.MSELoss()
     lr_scheduler=torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones=[15], gamma=0.1)
-    # logger, final_output_dir, tb_log_dir = create_logger(
-    #     cfg, '{:}_lr{:}_{:}_{:}'.format(args.model,lr,optimizer,'mse'), 'train')
-    # writer_dict = {
-    #     'writer': SummaryWriter(log_dir=tb_log_dir),
-    #     'train_global_steps': 0,
-    #     'valid_global_steps': 0,
-    # }
+
     # begin to train
     logger.info("------start training------")
     min_val_loss = np.inf
@@ -90,11 +84,6 @@ def main(args):
     best_mae = 1
     best_acc = 0
     best_loss = 1
-    # count_labels = torch.zeros(24).cuda()
-    # for _, (_, labels) in enumerate(train_dataset):
-    #     count_labels += labels>0
-    # print(count_labels)
-    # exit()
     best_model = None
     
     for epoch in range(args.epochs):
@@ -137,7 +126,7 @@ if __name__ == "__main__":
     parser.add_argument('--print_fq', type=int, default=20,
                         )
     parser.add_argument('--save_path',type=str,default="/media/ljy/ubuntu_disk/jhy_code/resnet-for-au/checkpoint/0606_20e.pth")
-    parser.add_argument('--log_dir',type=str,default="/media/ljy/ubuntu_disk/jhy_code/resnet-for-au/log/log.txt")
+    parser.add_argument('--log_dir',type=str,default="/media/ljy/ubuntu_disk/jhy_code/resnet-for-au/log/")
     parser.add_argument("--num_workers", type=int, default=32)
     args, _ = parser.parse_known_args()
     main(args)
