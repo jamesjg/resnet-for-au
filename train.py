@@ -74,7 +74,7 @@ def main(args):
     optimizer = optim.Adam(model.parameters(), lr=args.lr,
                             weight_decay=args.weight_decay)
     mse_loss = torch.nn.MSELoss()
-    lr_scheduler=torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones=[15], gamma=0.1)
+    lr_scheduler=torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones=[2,4], gamma=0.1, verbose=True)
 
     # begin to train
     logger.info("------start training------")
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--file_path',type=str,default="/media/ljy/新加卷1/FEAFA+")
     parser.add_argument('--num_class',type=int,default=24)
-    parser.add_argument('--epochs',type=int,default=20)
+    parser.add_argument('--epochs',type=int,default=6)
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='Initial learning rate.')
     parser.add_argument('--weight_decay', type=float, default=1e-4,

@@ -43,8 +43,8 @@ class AuDataset(Dataset):
         self.labels_path = labels_path
         self.imgs_path = imgs_path
         self.loss_num = loss
-        print(data_path+" all :", len(self.labels_path))
-        print(data_path+ " lost :", self.loss_num)
+        # print(data_path+" all :", len(self.labels_path))
+        # print(data_path+ " lost :", self.loss_num)
         
     def __getitem__(self, idx):
 
@@ -62,15 +62,13 @@ class AuDataset(Dataset):
         #     img, new_landmarks=self.face_aligner.align(img, landmark)
 
         # get label
-        f = open(label_path, 'r')
-        lis = f.readline().split(' ')
-        label = list(map(float, lis))
-        f.close()
+        label=np.loadtxt(label_path,dtype=float)
+        #print(label)
         # transform
         if self.transform:
             img, label = self.transform(img, label)
         assert label.shape[0]==24, 'label shape is {:}'.format(label.shape)
-        return img, label
+        return img, label.float()
                  
     def __len__(self):
         return len(self.labels_path)
