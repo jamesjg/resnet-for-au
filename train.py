@@ -7,7 +7,7 @@ from torch import nn, optim
 import torchvision
 from torchvision import datasets
 from Dataset.transform import ToTensor,Normalize,Compose,UnNormalize,RandomCrop,RandomColorjitter,CenterCrop
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 from Dataset.au_dataset import AuDataset
 import numpy as np
 import torch.nn.functional as F
@@ -16,9 +16,9 @@ from PIL import Image
 import matplotlib.pyplot as plt
 #from timm import create_model
 from Dataset.get_landmarks import align_face
-from process.help import create_logger
+from utils.get_logger import create_logger
 def main(args):
-
+    logger = create_logger(args.log_dir)
     transform_train = Compose([
         RandomCrop(224),
         RandomColorjitter(),
@@ -31,27 +31,32 @@ def main(args):
         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
     
-    train_dataset = AuDataset(data_path=os.path.join(args.file_path, 'train'), 
-                                        transform = transform_train) 
-    val_dataset = AuDataset(data_path=os.path.join(args.file_path, 'val'),  
-                                        transform = transform_val) 
+    file_names = ['FEAFA','Disfa'] #分别是FEAFA-A,FEAFA-B的存储目录名
+    train_file_path = [os.path.join(args.file_path, i, i+'_train') for i in file_names]
+    val_file_path = [os.path.join(args.file_path, i, i+'_test') for i in file_names]
+    logger.info("train_file_path:"+ str(train_file_path))
+    logger.info("val_file_path:"+ str(val_file_path))
+    train_dataset_list = [AuDataset(data_path=i, transform=transform_train, iscrop='_crop') for i in train_file_path] 
+    val_dataset_list =[AuDataset(data_path=i, transform=transform_val, iscrop='_crop') for i in val_file_path]
+    train_dataset = ConcatDataset(train_dataset_list)
+    val_dataset = ConcatDataset(val_dataset_list)
     
     train_num = len(train_dataset)
     val_num = len(val_dataset)
-    zero_train = train_dataset.zero_label_num()
-    zero_val = val_dataset.zero_label_num()
-    print('train_num:', train_num, 'val_num:', val_num)   
-    print('zero_label_train:', zero_train, 'zero_val:', zero_val)
+    # zero_train = train_dataset.zero_label_num()
+    # zero_val = val_dataset.zero_label_num()
+    # logger.info('train_num:'+str(train_num)+'val_num:'+ str(val_num))   
+    logger.info("train_num : {}, val_num : {}".format(train_num, val_num))
+    # print('zero_label_train:', zero_train, 'zero_val:', zero_val)
     train_loader = DataLoader(dataset=train_dataset, 
                             batch_size=args.batch_size, 
                             shuffle=True,          
-                            num_workers=0)      
+                            num_workers=args.num_workers)      
     
     val_loader = DataLoader(dataset=val_dataset,
                             batch_size=args.batch_size,
                             shuffle=False,
-                            num_workers=0)
-    
+                            num_workers=args.num_workers)
     #加载模型，使用预训练模型，但是最后一层重新训练
     model = torchvision.models.resnet50().cuda()
     num_features = model.fc.in_features
@@ -78,13 +83,13 @@ def main(args):
     #     'valid_global_steps': 0,
     # }
     # begin to train
-    print("------start training------")
+    logger.info("------start training------")
     min_val_loss = np.inf
     
     best_epoch = 0
     best_mae = 1
-    best_auc = 0
-    
+    best_acc = 0
+    best_loss = 1
     # count_labels = torch.zeros(24).cuda()
     # for _, (_, labels) in enumerate(train_dataset):
     #     count_labels += labels>0
@@ -97,16 +102,22 @@ def main(args):
         
         model.train()
         loss = 0.0
-        train_loss, train_acc = train_one_epoch(train_loader,  model, optimizer, mse_loss, epoch, args)
-        val_loss, val_acc, val_mae = evalutate(val_loader,  model, mse_loss, epoch, args)
+        train_loss, train_acc = train_one_epoch(train_loader,  model, optimizer, mse_loss, epoch, args, logger)
+        val_loss, val_acc, val_mae = evalutate(val_loader,  model, mse_loss, epoch, args, logger)
         lr_scheduler.step()
         if min_val_loss >= val_loss:
             min_val_loss = val_loss
             best_epoch = epoch
-            print("now the best epoch is {}, val_loss = {:.5f}, acc = {:.5f} ".format(epoch, val_loss, val_acc))
+            logger.info("now the best epoch is {}, val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f} ".format(epoch, val_loss, val_mae, val_acc))
             best_model = model
+            best_mae = val_mae
+            best_loss = val_loss
+            best_acc = val_acc
+            
+            
     print("------finish training------")
-    print("the best epoch is " + str(best_epoch))
+    logger.info("the best epoch is " + str(best_epoch))
+    logger.info("val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f} ".format(epoch, best_loss, best_mae, best_acc))
     torch.save(best_model.state_dict(), args.save_path)
     # img = Image.open(r"C:\Users\James\Desktop\huijin.png").convert('RGB')
     # img = transform_val(img).cuda()
@@ -115,8 +126,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=12)
-    parser.add_argument('--file_path',type=str,default="E:\dataset\\face\FEAFA-A")
+    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--file_path',type=str,default="/media/ljy/新加卷1/FEAFA+")
     parser.add_argument('--num_class',type=int,default=24)
     parser.add_argument('--epochs',type=int,default=20)
     parser.add_argument('--lr', type=float, default=1e-4,
@@ -125,7 +136,8 @@ if __name__ == "__main__":
                         help='Weight decay (L2 loss on parameters).')
     parser.add_argument('--print_fq', type=int, default=20,
                         )
-    parser.add_argument('--save_path',type=str,default="E:\project\\resnet-for-au\checkpoint\\0605_20e.pth")
-    
+    parser.add_argument('--save_path',type=str,default="/media/ljy/ubuntu_disk/jhy_code/resnet-for-au/checkpoint/0606_20e.pth")
+    parser.add_argument('--log_dir',type=str,default="/media/ljy/ubuntu_disk/jhy_code/resnet-for-au/log/log.txt")
+    parser.add_argument("--num_workers", type=int, default=32)
     args, _ = parser.parse_known_args()
     main(args)

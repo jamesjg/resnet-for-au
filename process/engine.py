@@ -1,20 +1,8 @@
 import torch
 from utils.misc import AverageMeter
 import time
-import logging
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler('E:/project/resnet-for-au/log/log.txt')
-file_handler.setLevel(logging.INFO)
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-formatter = logging.Formatter(' %(message)s')
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-def train_one_epoch(train_loader, model, optimizer, criterion, epoch,  args):
+
+def train_one_epoch(train_loader, model, optimizer, criterion, epoch,  args, logger):
     batch_time = AverageMeter()  #一个batch中模型运行时间
     data_time = AverageMeter()  #一个batch中加载数据时间
     loss = AverageMeter()
@@ -67,7 +55,7 @@ def train_one_epoch(train_loader, model, optimizer, criterion, epoch,  args):
 
     return acc.avg, mae.avg
 
-def evalutate(val_loader, model, criterion, epoch, args):
+def evalutate(val_loader, model, criterion, epoch, args, logger):
     batch_time = AverageMeter()  #一个batch中模型运行时间
     data_time = AverageMeter()  #一个batch中加载数据时间
     loss = AverageMeter()
