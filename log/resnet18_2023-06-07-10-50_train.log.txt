@@ -1,0 +1,4 @@
+ train_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_train', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_train']
+ val_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_test', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_test']
+ train_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_train', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_train']
+ val_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_test', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_test']

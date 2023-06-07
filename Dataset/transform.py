@@ -87,6 +87,17 @@ class RandomCrop (object):
         img=self.trans(img)
         
         return img, target
+class Resize (object):
+    def __init__(self,size=256):
+        self.size=size
+        self.trans=transforms.Resize(size)
+
+    def __call__(self, img,target):
+        if  not isinstance(img,Image.Image):
+            img=nptopil(img)
+        img=self.trans(img)
+        
+        return img, target
 
 class CenterCrop (object):
     def __init__(self,size=256):

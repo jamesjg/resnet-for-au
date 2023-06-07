@@ -1,4 +1,4 @@
-from random import random
+import random
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms, utils
@@ -18,6 +18,7 @@ class AuDataset(Dataset):
         imgs_path = []
         labels_path = []
         loss = 0
+        drop = 0
         #path_and_name = []
         for folder in data_folders:
             item_list = os.listdir(os.path.join(data_path,folder))
@@ -25,13 +26,25 @@ class AuDataset(Dataset):
                 if item.split('.')[-1] == 'auw': #先找label
                     label_path = os.path.join(data_path,folder,item)  #"../././xxxxx.auw"
                     #然后读入对应的crop_img
-                    img_path = os.path.join(data_path,folder,item.split('.')[0]+iscrop+'.jpg')   #".././xxxxx_crop.jpg"
-                    if os.path.exists(img_path):
-                        imgs_path.append(img_path)
-                        labels_path.append(label_path)
-                    else:
-                        #print("{} dose not exist".format(img_path))
-                        loss += 1
+                    label=np.loadtxt(label_path,dtype=float)
+                    img_path_jpg = os.path.join(data_path,folder,item.split('.')[0]+iscrop+'.jpg')   #".././xxxxx_crop.jpg"
+                    img_path_png = os.path.join(data_path,folder,item.split('.')[0]+iscrop+'.png')
+                    if np.min(label)==0:
+                        p=random.uniform(0,1)
+                        if p < 0.5:
+                            drop += 1
+                            continue
+                        else:
+                            if os.path.exists(img_path_jpg):
+                                imgs_path.append(img_path_jpg)
+                                labels_path.append(label_path)
+                            elif  os.path.exists(img_path_png):
+                                imgs_path.append(img_path_png)
+                                labels_path.append(label_path)
+                            else:
+                                #print(img_path_jpg)
+                                #print("{} dose not exist".format(img_path))
+                                loss += 1
                 # if os.path.join(data_path,folder,item.split('.')[0]) != pre_name:
                 #     path_and_name.append(os.path.join(data_path,folder,item.split('.')[0]))  # 路径名加编号，不带后缀
                 #     pre_name = os.path.join(data_path,folder,item.split('.')[0])
@@ -43,8 +56,10 @@ class AuDataset(Dataset):
         self.labels_path = labels_path
         self.imgs_path = imgs_path
         self.loss_num = loss
+        self.iscrop = iscrop
+        self.drop = drop
         # print(data_path+" all :", len(self.labels_path))
-        # print(data_path+ " lost :", self.loss_num)
+        print(data_path+ " drop :", self.drop)
         
     def __getitem__(self, idx):
 
@@ -54,15 +69,17 @@ class AuDataset(Dataset):
         assert os.path.exists(img_path), "no img found in {}".format(img_path)
         img = cv2.cvtColor(cv2.imread(img_path),cv2.COLOR_BGR2RGB)
         #利用特征点检测器处理得到特征点
-        # landmark_helper = Landmark_helper(Method_type='dlib')
-        # landmark, flag = landmark_helper.detect_facelandmark(img)
-        # #如果检测到人脸
-        # if flag:
-        #     assert(landmark.shape==(68,2)),'landmark shape is wrong {:}'.format(landmark.shape)
-        #     img, new_landmarks=self.face_aligner.align(img, landmark)
-
+        if not self.iscrop:
+            landmark_helper = Landmark_helper(Method_type='dlib')
+            landmark, flag = landmark_helper.detect_facelandmark(img)
+            #如果检测到人脸
+            if flag:
+                assert(landmark.shape==(68,2)),'landmark shape is wrong {:}'.format(landmark.shape)
+                img, new_landmarks=self.face_aligner.align(img, landmark)
+        
         # get label
         label=np.loadtxt(label_path,dtype=float)
+        
         #print(label)
         # transform
         if self.transform:

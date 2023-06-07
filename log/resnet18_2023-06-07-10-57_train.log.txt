@@ -1,0 +1,17 @@
+ train_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_train', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_train']
+ val_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_test', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_test']
+ train_num : 188095, val_num : 31807
+ ------start training------
+ Epoch: [0][0/735]	Time 61.351s (61.351s)	Speed 4.2 samples/s	Data 59.283s (59.283s)	Loss 2390.88208 (2390.88208)	MAE 0.47141 (0.47141)	ACC 0.00000 (0.00000)	
+ Epoch: [0][20/735]	Time 0.571s (3.468s)	Speed 448.2 samples/s	Data 0.400s (3.206s)	Loss 281.93549 (537.72742)	MAE 0.07535 (0.15690)	ACC 0.63672 (0.31696)	
+ Epoch: [0][40/735]	Time 0.577s (2.962s)	Speed 443.8 samples/s	Data 0.405s (2.744s)	Loss 252.08575 (401.02550)	MAE 0.07075 (0.11515)	ACC 0.71484 (0.49333)	
+ Epoch: [0][60/735]	Time 0.582s (2.181s)	Speed 440.0 samples/s	Data 0.410s (1.978s)	Loss 238.30359 (352.59157)	MAE 0.07016 (0.10100)	ACC 0.71875 (0.55405)	
+ Epoch: [0][80/735]	Time 0.583s (2.263s)	Speed 439.1 samples/s	Data 0.410s (2.068s)	Loss 258.08929 (326.33553)	MAE 0.07370 (0.09400)	ACC 0.67188 (0.58348)	
+ Epoch: [0][100/735]	Time 0.577s (2.309s)	Speed 443.6 samples/s	Data 0.405s (2.118s)	Loss 231.28183 (309.29497)	MAE 0.07041 (0.08975)	ACC 0.66797 (0.60121)	
+ Epoch: [0][120/735]	Time 0.590s (2.024s)	Speed 434.1 samples/s	Data 0.417s (1.835s)	Loss 260.97485 (296.35137)	MAE 0.07322 (0.08663)	ACC 0.64844 (0.61593)	
+ Epoch: [0][140/735]	Time 0.606s (2.101s)	Speed 422.2 samples/s	Data 0.433s (1.915s)	Loss 207.10155 (283.98470)	MAE 0.06625 (0.08389)	ACC 0.70312 (0.62824)	
+ Epoch: [0][160/735]	Time 39.511s (2.154s)	Speed 6.5 samples/s	Data 39.327s (1.970s)	Loss 192.73106 (272.22299)	MAE 0.06556 (0.08143)	ACC 0.71484 (0.64213)	
+ Epoch: [0][180/735]	Time 0.575s (1.980s)	Speed 445.5 samples/s	Data 0.402s (1.797s)	Loss 202.25357 (262.37573)	MAE 0.06461 (0.07934)	ACC 0.73047 (0.65405)	
+ Epoch: [0][200/735]	Time 0.583s (2.026s)	Speed 438.9 samples/s	Data 0.410s (1.844s)	Loss 136.93100 (252.80645)	MAE 0.05453 (0.07732)	ACC 0.82031 (0.66667)	
+ Epoch: [0][220/735]	Time 0.589s (1.895s)	Speed 434.7 samples/s	Data 0.415s (1.714s)	Loss 134.37561 (244.17019)	MAE 0.05459 (0.07554)	ACC 0.82031 (0.67730)	
+ Epoch: [0][240/735]	Time 0.588s (1.938s)	Speed 435.6 samples/s	Data 0.415s (1.757s)	Loss 158.81082 (236.77451)	MAE 0.05462 (0.07396)	ACC 0.80078 (0.68769)	

@@ -1,0 +1,28 @@
+ train_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_train', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_train']
+ val_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_test', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_test']
+ train_num : 188095, val_num : 31807
+ ------start training------
+ Epoch: [0][0/735]	Time 38.383s (38.383s)	Speed 6.7 samples/s	Data 36.163s (36.163s)	Loss 2462.78003 (2462.78003)	MAE 0.47435 (0.47435)	ACC 0.00000 (0.00000)	
+ Epoch: [0][20/735]	Time 0.215s (2.210s)	Speed 1193.3 samples/s	Data 0.042s (1.940s)	Loss 264.62906 (569.65818)	MAE 0.07800 (0.16262)	ACC 0.62109 (0.30134)	
+ Epoch: [0][40/735]	Time 0.212s (1.791s)	Speed 1206.2 samples/s	Data 0.040s (1.568s)	Loss 221.62448 (417.90250)	MAE 0.07179 (0.11929)	ACC 0.67969 (0.47342)	
+ Epoch: [0][60/735]	Time 0.214s (1.274s)	Speed 1195.3 samples/s	Data 0.041s (1.068s)	Loss 293.56128 (364.05548)	MAE 0.07835 (0.10456)	ACC 0.62109 (0.53362)	
+ Epoch: [0][80/735]	Time 0.216s (1.352s)	Speed 1184.1 samples/s	Data 0.043s (1.153s)	Loss 236.54062 (335.42047)	MAE 0.07522 (0.09712)	ACC 0.66016 (0.56506)	
+ Epoch: [0][100/735]	Time 0.216s (1.390s)	Speed 1183.9 samples/s	Data 0.043s (1.197s)	Loss 270.12451 (318.34332)	MAE 0.07706 (0.09253)	ACC 0.58984 (0.58420)	
+ Epoch: [0][120/735]	Time 0.215s (1.196s)	Speed 1190.1 samples/s	Data 0.042s (1.006s)	Loss 201.81586 (301.72570)	MAE 0.06565 (0.08862)	ACC 0.73438 (0.60363)	
+ Epoch: [0][140/735]	Time 0.216s (1.242s)	Speed 1187.1 samples/s	Data 0.043s (1.055s)	Loss 206.21027 (288.69667)	MAE 0.06642 (0.08558)	ACC 0.72266 (0.61896)	
+ Epoch: [0][160/735]	Time 26.473s (1.278s)	Speed 9.7 samples/s	Data 26.294s (1.092s)	Loss 173.27310 (276.32801)	MAE 0.06193 (0.08285)	ACC 0.75391 (0.63521)	
+ Epoch: [0][180/735]	Time 0.219s (1.165s)	Speed 1169.7 samples/s	Data 0.046s (0.980s)	Loss 181.19806 (265.98779)	MAE 0.06176 (0.08052)	ACC 0.73828 (0.64844)	
+ Epoch: [0][200/735]	Time 0.217s (1.203s)	Speed 1179.4 samples/s	Data 0.043s (1.019s)	Loss 165.15056 (256.33388)	MAE 0.05911 (0.07848)	ACC 0.80078 (0.66016)	
+ Epoch: [0][220/735]	Time 0.217s (1.113s)	Speed 1182.3 samples/s	Data 0.042s (0.931s)	Loss 167.61484 (248.00574)	MAE 0.05954 (0.07665)	ACC 0.75781 (0.67145)	
+ Epoch: [0][240/735]	Time 0.219s (1.147s)	Speed 1169.2 samples/s	Data 0.046s (0.966s)	Loss 148.68076 (240.08157)	MAE 0.05475 (0.07495)	ACC 0.83203 (0.68228)	
+ Epoch: [0][260/735]	Time 0.215s (1.176s)	Speed 1191.3 samples/s	Data 0.042s (0.995s)	Loss 137.83611 (232.68433)	MAE 0.05386 (0.07336)	ACC 0.83203 (0.69286)	
+ Epoch: [0][280/735]	Time 0.216s (1.107s)	Speed 1183.3 samples/s	Data 0.043s (0.927s)	Loss 143.22246 (225.82281)	MAE 0.05407 (0.07191)	ACC 0.82812 (0.70251)	
+ Epoch: [0][300/735]	Time 0.213s (1.130s)	Speed 1202.5 samples/s	Data 0.040s (0.950s)	Loss 121.69803 (219.57117)	MAE 0.04976 (0.07052)	ACC 0.85547 (0.71198)	
+ Epoch: [0][320/735]	Time 25.002s (1.151s)	Speed 10.2 samples/s	Data 24.821s (0.971s)	Loss 131.80325 (213.75751)	MAE 0.05037 (0.06924)	ACC 0.83984 (0.72068)	
+ Epoch: [0][340/735]	Time 0.216s (1.096s)	Speed 1187.4 samples/s	Data 0.041s (0.917s)	Loss 120.86043 (208.72673)	MAE 0.04837 (0.06810)	ACC 0.85547 (0.72838)	
+ Epoch: [0][360/735]	Time 0.215s (1.114s)	Speed 1190.3 samples/s	Data 0.042s (0.935s)	Loss 121.42999 (203.86168)	MAE 0.04924 (0.06700)	ACC 0.84375 (0.73566)	
+ Epoch: [0][380/735]	Time 0.216s (1.067s)	Speed 1185.8 samples/s	Data 0.042s (0.888s)	Loss 121.65685 (199.20189)	MAE 0.04848 (0.06600)	ACC 0.83594 (0.74272)	
+ Epoch: [0][400/735]	Time 0.215s (1.085s)	Speed 1191.3 samples/s	Data 0.041s (0.906s)	Loss 95.72913 (194.72422)	MAE 0.04291 (0.06501)	ACC 0.91406 (0.74937)	
+ Epoch: [0][420/735]	Time 0.214s (1.100s)	Speed 1198.1 samples/s	Data 0.041s (0.922s)	Loss 86.84701 (190.43457)	MAE 0.04080 (0.06402)	ACC 0.91797 (0.75604)	
+ Epoch: [0][440/735]	Time 0.216s (1.060s)	Speed 1187.0 samples/s	Data 0.042s (0.882s)	Loss 100.91402 (186.41556)	MAE 0.04339 (0.06310)	ACC 0.89062 (0.76213)	
+ Epoch: [0][460/735]	Time 0.222s (1.082s)	Speed 1153.1 samples/s	Data 0.049s (0.904s)	Loss 97.66085 (182.56101)	MAE 0.04206 (0.06224)	ACC 0.91797 (0.76790)	

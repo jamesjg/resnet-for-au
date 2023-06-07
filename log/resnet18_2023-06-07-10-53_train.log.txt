@@ -1,0 +1,5 @@
+ train_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_train', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_train']
+ val_file_path:['/media/ljy/新加卷1/FEAFA+/FEAFA/FEAFA_test', '/media/ljy/新加卷1/FEAFA+/Disfa/Disfa_test']
+ train_num : 188095, val_num : 31807
+ ------start training------
+ Epoch: [0][0/735]	Time 41.628s (41.628s)	Speed 6.1 samples/s	Data 39.422s (39.422s)	Loss 2260.30957 (2260.30957)	MAE 0.45980 (0.45980)	ACC 0.00000 (0.00000)	
