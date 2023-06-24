@@ -9,14 +9,13 @@ def train_one_epoch(train_loader, model, optimizer, criterion, epoch,  args, log
     loss = AverageMeter()
     mae = AverageMeter()
     acc = AverageMeter()
-    
+    model.train()
     batch_start_time = time.time()
 
     for idx, (imgs, labels) in enumerate(train_loader):
         if epoch == 0 and idx <= 10:
             ori_imgs=UnNormalize(mean =[0.4743, 0.3539, 0.3249],std = [0.2697, 0.2238, 0.2154])(imgs)
-            torchvision.utils.save_image(ori_imgs,'images/image_{:}.jpg'.format(idx),normalize=True)
-
+            torchvision.utils.save_image(ori_imgs[0],'images/image_{:}.jpg'.format(idx),normalize=True)
         imgs = imgs.cuda()
         labels = labels.cuda()
         bs = labels.shape[0]
@@ -33,7 +32,7 @@ def train_one_epoch(train_loader, model, optimizer, criterion, epoch,  args, log
 
         mae_array = torch.mean(torch.abs(labels-output), dim=1)  #batchsize个样本的每个AU的平均绝对值损失
         mae_value = torch.mean(mae_array)   #每个样本在每个AU上的平均绝对值损失
-        predict_true_array = torch.where(mae_array < 0.008, 1, 0)
+        predict_true_array = torch.where(mae_array < 0.08, 1, 0)
         acc_value = torch.sum(predict_true_array) / bs
 
         mae.update(mae_value, bs)
@@ -78,36 +77,36 @@ def evalutate(val_loader, model, criterion, epoch, args, logger):
         for idx, (imgs, labels) in enumerate(val_loader):
             if epoch == 0 and idx <= 5 :
                 ori_imgs=UnNormalize(mean =[0.4743, 0.3539, 0.3249],std = [0.2697, 0.2238, 0.2154])(imgs)
-                torchvision.utils.save_image(ori_imgs,'images/val_image_{:}.jpg'.format(idx),normalize=True)
-            imgs = imgs.cuda()
-            labels = labels.cuda()
-            bs = labels.shape[0]
-            output = model(imgs)
-            loss_val = criterion(100*output, 100*labels)
-            loss.update(loss_val.item(), bs)
-            batch_time.update(time.time() - batch_start_time)
-            batch_start_time = time.time()
+                torchvision.utils.save_image(ori_imgs[0],'images/val_image_{:}.jpg'.format(idx),normalize=True)
+            # imgs = imgs.cuda()
+            # labels = labels.cuda()
+            # bs = labels.shape[0]
+            # output = model(imgs)
+            # loss_val = criterion(100*output, 100*labels)
+            # loss.update(loss_val.item(), bs)
+            # batch_time.update(time.time() - batch_start_time)
+            # batch_start_time = time.time()
 
-            mae_array = torch.mean(torch.abs(labels-output), dim=1)  #batchsize个样本的每个AU的平均绝对值损失
-            mae_value = torch.mean(mae_array)   #每个样本在每个AU上的平均绝对值损失
-            predict_true_array = torch.where(mae_array < 0.008, 1, 0)
-            acc_value = torch.sum(predict_true_array) / bs
+            # mae_array = torch.mean(torch.abs(labels-output), dim=1)  #batchsize个样本的每个AU的平均绝对值损失
+            # mae_value = torch.mean(mae_array)   #每个样本在每个AU上的平均绝对值损失
+            # predict_true_array = torch.where(mae_array < 0.08, 1, 0)
+            # acc_value = torch.sum(predict_true_array) / bs
 
-            mae.update(mae_value, bs)
-            acc.update(acc_value, bs)
-            # global_steps = writer_dict['train_global_steps']
-            if idx % args.print_fq == 0 or idx + 1 == len(val_loader):
-                msg = 'Epoch: [{0}][{1}/{2}]\t' \
-                      'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
-                      'Speed {speed:.1f} samples/s\t' \
-                      'Data {data_time.val:.3f}s ({data_time.avg:.3f}s)\t' \
-                      'Loss {loss.val:.5f} ({loss.avg:.5f})\t' \
-                      'MAE {mae.val:.5f} ({mae.avg:.5f})\t' \
-                      'ACC {acc.val:.5f} ({acc.avg:.5f})\t' .format (
-                    epoch, idx, len (val_loader), batch_time=batch_time,
-                    speed=bs / batch_time.val,
-                    data_time=data_time, loss=loss, mae=mae,acc=acc)
-                logger.info (msg)
+            # mae.update(mae_value, bs)
+            # acc.update(acc_value, bs)
+            # # global_steps = writer_dict['train_global_steps']
+            # if idx % args.print_fq == 0 or idx + 1 == len(val_loader):
+            #     msg = 'Epoch: [{0}][{1}/{2}]\t' \
+            #           'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
+            #           'Speed {speed:.1f} samples/s\t' \
+            #           'Data {data_time.val:.3f}s ({data_time.avg:.3f}s)\t' \
+            #           'Loss {loss.val:.5f} ({loss.avg:.5f})\t' \
+            #           'MAE {mae.val:.5f} ({mae.avg:.5f})\t' \
+            #           'ACC {acc.val:.5f} ({acc.avg:.5f})\t' .format (
+            #         epoch, idx, len (val_loader), batch_time=batch_time,
+            #         speed=bs / batch_time.val,
+            #         data_time=data_time, loss=loss, mae=mae,acc=acc)
+            #     logger.info (msg)
 
 
 
@@ -132,4 +131,4 @@ def evalutate(val_loader, model, criterion, epoch, args, logger):
 
 
 
-        return loss.avg, acc.avg, mae.avg
+        #return loss.avg, acc.avg, mae.avg

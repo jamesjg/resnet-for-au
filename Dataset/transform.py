@@ -77,9 +77,9 @@ class RandomColorjitter (object):
         return img, target
 
 class RandomCrop (object):
-    def __init__(self,size=256,pad=0):
+    def __init__(self,size=256,pad=0, pad_if_needed=False, fill=0):
         self.size=size
-        self.trans=transforms.RandomCrop(size,padding=pad)
+        self.trans=transforms.RandomCrop(size,padding=pad, pad_if_needed=pad_if_needed, fill=fill)
 
     def __call__(self, img,target):
         if  not isinstance(img,Image.Image):
