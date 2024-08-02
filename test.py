@@ -1,6 +1,7 @@
 import argparse
 import os
 import parser
+import random
 from time import perf_counter
 import torch
 from torch import nn, optim
@@ -17,6 +18,7 @@ import matplotlib.pyplot as plt
 #from timm import create_model
 from Dataset.get_landmarks import align_face
 from utils.get_logger import create_logger
+from utils.cal_less_more import pred_less_and_more
 def get_each_au_num(loader):
     matrix = torch.zeros((6,24)).cuda()
     for  imgs, labels in loader:
@@ -48,10 +50,17 @@ def get_mean_std_value(loader):
     return mean,std
 
 def main(args):
+    torch.manual_seed(args.random_seed)
+    random.seed(args.random_seed)
+    torch.cuda.manual_seed(args.random_seed)  # gpu
+    np.random.seed(args.random_seed)  # numpy
+
+    if torch.cuda.is_available():
+        torch.backends.cudnn.deterministic = True
     logger = create_logger(args.log_dir, model_name='resnet18')
     transform_val = Compose([
         #CenterCrop(224),
-        Resize(224),
+        Resize((224,224)),
         ToTensor(),
         #Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         Normalize(mean =[0.4743, 0.3539, 0.3249],std = [0.2697, 0.2238, 0.2154]),
@@ -60,7 +69,7 @@ def main(args):
     file_names = ['FEAFA','Disfa'] #分别是FEAFA-A,FEAFA-B的存储目录名
     val_file_path = [os.path.join(args.file_path, i, i+'_test') for i in file_names]
     logger.info("val_file_path:"+ str(val_file_path))
-    val_dataset_list =[AuDataset(data_path=i, transform=transform_val, iscrop=args.iscrop) for i in val_file_path]
+    val_dataset_list =[AuDataset(data_path=i, transform=transform_val, iscrop=args.iscrop, mode='Test') for i in val_file_path]
     val_dataset = ConcatDataset(val_dataset_list)
     
     val_num = len(val_dataset)
@@ -70,28 +79,30 @@ def main(args):
                             batch_size=args.batch_size,
                             shuffle=False,
                             num_workers=args.num_workers)
-    model = torchvision.models.resnet18().cuda()
+    model = torchvision.models.resnet18()
     num_features = model.fc.in_features
     model.fc = nn.Sequential(
-        nn.Dropout(),
+        nn.Dropout(0.8),
         nn.Linear(num_features, 24),
-        nn.Sigmoid()  # 使用 Sigmoid 激活函数将输出限制在0-1之间
+        nn.Hardsigmoid()  # 使用 Sigmoid 激活函数将输出限制在0-1之间
         )
     model = model.cuda()
+    model.load_state_dict(torch.load("/media/ljy/ubuntu_disk1/jhy_code/resnet-for-au/checkpoint/0613_detectfaceandtransformthenrandresize_dropout0_8_weight_decay-2_alldata_hardsigmoid/best.pth"))
     if args.criterion == 'mse':
          criterion = torch.nn.MSELoss()
     elif args.criterion == 'bce':
         criterion = torch.nn.BCELoss()
     elif args.criterion == 'smoothl1':
         criterion = torch.nn.SmoothL1Loss()
-    val_loss, val_acc, val_mae = evalutate(val_loader,  model, criterion, 0, args, logger)
-    logger.info("the val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f} ".format(val_loss, val_acc, val_mae))
-
+    val_loss, val_acc, val_mae, val_icc,_,_,pred, label = evalutate(val_loader,  model, criterion, 0, args, logger)
+    logger.info("the val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f}, icc = {:.5f} ".format(val_loss, val_acc, val_mae, val_icc))
+    pred_less_and_more(pred, label)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--file_path',type=str,default="/media/ljy/新加卷1/FEAFA+")
+    parser.add_argument('--batch_size', type=int, default=512)
+    parser.add_argument('--random_seed', type=int, default=42)
+    parser.add_argument('--file_path',type=str,default="/media/ljy/新加卷/FEAFA+")
     parser.add_argument('--num_class',type=int,default=24)
     parser.add_argument('--epochs',type=int,default=20)
     parser.add_argument('--milestone',default=[12,16])

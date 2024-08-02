@@ -18,8 +18,10 @@ import matplotlib.pyplot as plt
 #from timm import create_model
 from Dataset.get_landmarks import align_face
 from utils.get_logger import create_logger
+from utils.cal_less_more import pred_less_and_more
+from utils.lr_scheduler import build_scheduler
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 def get_each_au_num(loader):
     matrix = torch.zeros((6,24)).cuda()
     for  imgs, labels in loader:
@@ -51,10 +53,11 @@ def get_mean_std_value(loader):
     return mean,std
 
 def main(args):
-    # torch.manual_seed(args.random_seed)
-    # random.seed(args.random_seed)
-    # torch.cuda.manual_seed(args.random_seed)  # gpu
-    # np.random.seed(args.random_seed)  # numpy
+    
+    torch.manual_seed(args.random_seed)
+    random.seed(args.random_seed)
+    torch.cuda.manual_seed(args.random_seed)  # gpu
+    np.random.seed(args.random_seed)  # numpy
 
     if torch.cuda.is_available():
         torch.backends.cudnn.deterministic = True
@@ -99,15 +102,21 @@ def main(args):
                             shuffle=False,
                             num_workers=args.num_workers)
     #加载模型，使用预训练模型，但是最后一层重新训练
-
-    model = torchvision.models.resnet18().cuda()
-    num_features = model.fc.in_features
-    print(num_features)
-    model.fc = nn.Sequential(
-        nn.Dropout(0.8),
-        nn.Linear(num_features, 24),
-        nn.Hardsigmoid()  # 使用 Sigmoid 激活函数将输出限制在0-1之间 
-        )
+    if args.model == 'vit':
+        model = torchvision.models.vit_b_16(num_classes=24,dropout=0.5)
+        model.heads = nn.Sequential(nn.Linear(model.hidden_dim, 24), nn.Sigmoid())
+    if args.model == 'swin':
+        model = torchvision.models.swin_t(num_classes=24, dropout=0.8)
+        model.heads = nn.Sequential(nn.Linear(model.hidden_dim, 24), nn.Sigmoid())
+    if args.model == 'resnet':
+        model = torchvision.models.resnet18()
+        num_features = model.fc.in_features
+        print(num_features)
+        model.fc = nn.Sequential(
+            nn.Dropout(0.8),
+            nn.Linear(num_features, 24), 
+            nn.Hardsigmoid()  # 使用 Sigmoid 激活函数将输出限制在0-1之间 
+            )
     model = model.cuda()
     # model_dict = model.state_dict() 
     # ori_model = torchvision.models.resnet50(pretrained=True)
@@ -123,7 +132,14 @@ def main(args):
         criterion = torch.nn.BCELoss()
     elif args.criterion == 'smoothl1':
         criterion = torch.nn.SmoothL1Loss()
-    lr_scheduler=torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones=args.milestone, gamma=0.1, verbose=True)
+    #lr_scheduler=torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones=args.milestone, gamma=0.1, verbose=True)
+    lr_scheduler = build_scheduler(args, optimizer, len(train_loader))
+    print("-----------------")
+    print("lr_scheduler = {}".format(lr_scheduler))
+    print("-----------------")
+
+    for k in args.__dict__:
+        logger.info("{} : {}".format(k, args.__dict__[k]))
 
     # begin to train
     logger.info("------start training------")
@@ -133,48 +149,61 @@ def main(args):
     best_mae = 1
     best_acc = 0
     best_loss = 1
+    best_icc = 0
     best_model = None
     if not os.path.exists(args.save_path ):
         os.mkdir(args.save_path)
     for epoch in range(args.epochs):
-        #print("lr =  {}".format(lr_scheduler.get_lr()))
+        # print("lr =  {}".format(lr_scheduler._get_lr()))
         
         model.train()
         loss = 0.0
-        train_loss, train_acc = train_one_epoch(train_loader,  model, optimizer, criterion              , epoch, args, logger)
-        val_loss, val_acc, val_mae = evalutate(val_loader,  model, criterion, epoch, args, logger)
-        lr_scheduler.step()
+        train_loss, train_acc = train_one_epoch(train_loader,  model, optimizer, criterion, lr_scheduler, epoch, args, logger)
+        val_loss, val_acc, val_mae, val_icc, val_pl, val_pm, pred, label = evalutate(val_loader,  model, criterion, epoch, args, logger)
+        pred_less_and_more(pred, label)
+        #lr_scheduler.step()
         if min_val_loss >= val_loss:
             min_val_loss = val_loss
             best_epoch = epoch
-            logger.info("now the best epoch is {}, val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f} ".format(epoch, val_loss, val_mae, val_acc))
+            logger.info("now the best epoch is {}, val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f}, icc = {:.5f} ".format(epoch, val_loss, val_mae, val_acc, val_icc))
             best_model = model
             best_mae = val_mae
             best_loss = val_loss
             best_acc = val_acc
-        if epoch %2 == 0:
-            torch.save(model.state_dict(), args.save_path+"/epoch{}.pth".format(epoch))
+            best_icc = val_icc
+        # if epoch %2 == 0:
+        #     torch.save(model.state_dict(), args.save_path+"/epoch{}.pth".format(epoch))
     print("------finish training------")
-    logger.info("the best epoch is {}, val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f} ".format(best_epoch, best_loss, best_mae, best_acc))
+    logger.info("the best epoch is {}, val_loss = {:.5f}, val_mae = {:.5f}, acc = {:.5f}, icc = {:.5f}, pl = {:.5f}, pm = {:.5f} ".format(best_epoch, best_loss, best_mae, best_acc, best_icc, val_pl, val_pm))
     torch.save(best_model.state_dict(), args.save_path+"/best.pth")
-
-
+    pred_less_and_more(pred, label)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=512)
+    parser.add_argument('--batch_size', type=int, default=256)
     parser.add_argument('--random_seed', type=int, default=42)
-    parser.add_argument('--file_path',type=str,default="/media/ljy/新加卷/FEAFA+")
+    parser.add_argument('--file_path',type=str,default="/media/ljy/新加卷1/FEAFA+")
+    parser.add_argument('--model',type=str,default="resnet")
     parser.add_argument('--num_class',type=int,default=24)
-    parser.add_argument('--epochs',type=int,default=20)
-    parser.add_argument('--milestone',default=[8,12])
-    parser.add_argument('--lr', type=float, default=5e-3,
-                        help='Initial learning rate.')
+
+
+    parser.add_argument('--lr_scheduler',type=str,default="cosine")
+    parser.add_argument('--epochs',type=int,default=30)
+    parser.add_argument('--warmup_epochs',type=int,default=2)
+    parser.add_argument('--decay_epochs',type=int,default=2)
+    parser.add_argument('--lr', type=float, default=1e-4,
+                        help='Initial base learning rate.')
+    parser.add_argument('--warmup_lr', type=float, default=5e-7,
+                        help='Initial warmup learning rate.')
+    parser.add_argument('--min_lr', type=float, default=5e-6,
+                        help='min learning rate.')
     parser.add_argument('--weight_decay', type=float, default=1e-2,
                         help='Weight decay (L2 loss on parameters).')
+    
+
     parser.add_argument('--print_fq', type=int, default=20,
                         )
-    parser.add_argument('--save_path',type=str,default="/media/ljy/ubuntu_disk1/jhy_code/resnet-for-au/checkpoint/0615_detectfaceandtransformthenrandresize_dropout0_8_weight_decay-2_alldata_Hardsigmoid_lr5e-3")
+    parser.add_argument('--save_path',type=str,default="/media/ljy/ubuntu_disk1/jhy_code/resnet-for-au/checkpoint/0706_swin_dropout0.8")
     parser.add_argument('--log_dir',type=str,default="/media/ljy/ubuntu_disk1/jhy_code/resnet-for-au/log/")
     parser.add_argument("--num_workers", type=int, default=32)
     parser.add_argument("--iscrop", type=str, default="_crop")

@@ -50,8 +50,8 @@ class AuDataset(Dataset):
         self.labels_path = labels_path
         self.imgs_path = imgs_path
         self.loss_num = loss
-        self.iscrop = iscrop
-        self.drop = drop
+        self.iscrop = iscrop 
+        self.drop = drop 
         self.box_transform = box_transform
         self.detect_face = detect_face
         self.mode = mode
